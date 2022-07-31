@@ -1,7 +1,7 @@
 import re
 import os
 
-shuru = ".mp4" #输入文件后缀名
+shuru = "\.mp4" #输入文件后缀名，不要去除前面的"\"
 shuchu = ".mp4" #输出文件后缀名
 
 def guolv(datalist):
