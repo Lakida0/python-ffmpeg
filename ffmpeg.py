@@ -1,21 +1,26 @@
-import re
 import os
+import subprocess
 
-shuru = "\.mp4" #输入文件后缀名，不要去除前面的"\"
-shuchu = ".mp4" #输出文件后缀名
+ffmpeg_exec = "ffmpeg" #ffmpeg可执行文件路径
+input_ext = ".flac" #输入文件后缀名，故障时在前面加"\"
+output_ext = ".wav" #输出文件后缀名
+input_path = "./" #输入路径，默认为当前路径，不建议修改，建议直接复制本文件到路径下
+output_path = "./output/" #输出路径
+ffmpeg_options = "-ar 44100" #转码参数
+ffmpeg_opt_list = ffmpeg_options.split() #将转码参数处理为列表
+files = [f for f in os.listdir(input_path) if f.lower().endswith(input_ext)] #列出当前目录下所有文件
+os.makedirs(output_path, exist_ok=True) #若文件夹不存在则直接创建
 
-def guolv(datalist):
-    return [val for val in datalist if re.search(shuru, val)]
-
-input_file = "./" #输入路径，默认为当前路径，不建议修改，建议直接复制本文件到路径下
-output_file = "./output/" #输出路径
-ffmpeg_path = "ffmpeg -i " #ffmpeg如果在path下则不用填写完整路径，注意末尾空格
-ffmpeg_options = " -ar 44100 "#转码参数，注意首位均有空格
-f = os.listdir(input_file) #列出当前目录下所有文件
-
-for i, n in enumerate(guolv(f)):
-    print("正在转换" + n)
-    fix_name = '"%s"' % (n) #修复文件名带空格，但是仅能在默认路径下工作
-    # print(ffmpeg_path + fix_name + ffmpeg_options + output_file + fix_name)
-    os.system(ffmpeg_path + fix_name + ffmpeg_options + output_file + str(i) + shuchu) #如修改默认路径则应当在此补全
-    # os.system(ffmpeg_path + fix_name + ffmpeg_options + output_file + fix_name)
+for i, filename in enumerate(files):
+    print("正在转换" + filename)
+    base,ext = os.path.splitext(filename)
+    out_name = base + output_ext
+    ffmpeg_cmd = [ffmpeg_exec,"-i",filename,*ffmpeg_opt_list,os.path.join(output_path,out_name)] #使用原始文件名
+    # ffmpeg_cmd = ["ffmpeg","-i",filename,*ffmpeg_options.split(),os.path.join(output_path,f"{i}{shuchu}")] #按序号生成文件名
+    # print("执行命令："," ".join(ffmpeg_cmd)) #调试输出
+    #实际执行
+    try:
+        subprocess.run(ffmpeg_cmd,check=True,text=True)
+        print(f"成功转换：{out_name}")
+    except subprocess.CalledProcessError:
+        print(f"{filename} 转换失败，错误信息如上")
